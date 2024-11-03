@@ -13,7 +13,7 @@ import os
 import nltk
 
 # Uncomment if stopwords need to be downloaded
-# nltk.download('stopwords')
+nltk.download('stopwords')
 
 load_dotenv()
 
