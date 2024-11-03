@@ -11,9 +11,9 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import nltk
-nltk.download('stopwords')
 
-from flask_cors import CORS
+# Uncomment if stopwords need to be downloaded
+# nltk.download('stopwords')
 
 load_dotenv()
 
@@ -34,11 +34,11 @@ def preprocess_text(text):
 def load_data(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad responses
+        response.raise_for_status()
         data = pd.read_csv(StringIO(response.text))
         data = data.drop(columns='Marks', errors='ignore').drop_duplicates(subset=['text'])
         print("DataFrame preview:")
-        print(data.head())  # Debugging output
+        print(data.head())
         return data
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
@@ -47,8 +47,9 @@ def load_data(url):
         print(f"Error parsing CSV: {e}")
         return pd.DataFrame()  # Return empty DataFrame on error
 
+# Fetch data URL from environment variables
 data_url = os.getenv("DATASET_URL")
-print(data_url)
+print("Dataset URL:", data_url)
 data = load_data(data_url)
 
 # Ensure questions variable is defined after loading data
@@ -91,17 +92,8 @@ def find_similar():
 def home():
     return "Flask API for Question Retrieval is running!"
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
-import os
-from flask import Flask
-
-app = Flask(__name__)
-
-# Your route definitions here
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Fetch the port from environment
-    app.run(host="0.0.0.0", port=port, debug=True)  # Bind to 0.0.0.0
-
+if __name__ == '__main__':
+    # Set host and port for local or global deployment
+    host = os.getenv("FLASK_HOST", "0.0.0.0")  # "0.0.0.0" for global, "127.0.0.1" for local testing
+    port = int(os.getenv("PORT", 5000))  # Default to port 5000 if no environment variable is set
+    app.run(host=host, port=port, debug=True)
