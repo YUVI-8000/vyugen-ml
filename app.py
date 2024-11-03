@@ -10,6 +10,12 @@ from nltk.corpus import stopwords
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import nltk
+nltk.download('stopwords')
+
+from flask_cors import CORS
+app = Flask(__name__)
+CORS(app)
 
 load_dotenv()
 
