@@ -91,5 +91,8 @@ def find_similar():
 def home():
     return "Flask API for Question Retrieval is running!"
 
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)  # Make sure port is explicitly set if needed
