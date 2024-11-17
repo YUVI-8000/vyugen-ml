@@ -208,5 +208,3 @@ Feel free to fork the repository and submit a pull request. Suggestions and bug 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ---
-
-Let me know if you'd like additional sections or clarifications!
