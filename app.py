@@ -97,5 +97,7 @@ def search():
     return jsonify({'query': topic, 'results': results, 'total_results': total_results})
 
 if __name__ == '__main__':
-    # Start the Flask server for API
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # Set host and port for local or global deployment
+    host = os.getenv("FLASK_HOST", "0.0.0.0")  # "0.0.0.0" for global, "127.0.0.1" for local testing
+    port = int(os.getenv("PORT", 5000))  # Default to port 5000 if no environment variable is set
+    app.run(host=host, port=port, debug=True)
