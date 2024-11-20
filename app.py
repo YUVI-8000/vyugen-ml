@@ -87,7 +87,8 @@ def search():
     return jsonify({'query': topic, 'results': results, 'total_results': len(results)})
 
 if __name__ == '__main__':
-    # Set host and port for deployment
-    host = os.getenv("FLASK_HOST", "0.0.0.0")  # Use "0.0.0.0" for global deployment
-    port = int(os.getenv("FLASK_PORT", 5000))  # Default port: 5000
-    app.run(host=host, port=port, debug=True)
+    # Fetch host and port dynamically for deployment
+    host = os.getenv("FLASK_HOST", "0.0.0.0")  # Default to "0.0.0.0" for global
+    port = int(os.getenv("PORT", 8000))        # Default to port 8000 for deployment
+    app.run(host=host, port=port, debug=False) # Disable debug mode for production
+
