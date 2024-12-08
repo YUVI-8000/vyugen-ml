@@ -118,6 +118,12 @@ def search():
     # Return the search results in JSON format
     return jsonify({'query': topic, 'results': unique_results, 'total_results': total_results})
 
+# if __name__ == '__main__':
+#     # Start the Flask server for API
+#     app.run(debug=True, host="127.0.0.1", port=8000)
+
 if __name__ == '__main__':
-    # Start the Flask server for API
-    app.run(debug=True, host="127.0.0.1", port=8000)
+    # Fetch host and port dynamically for deployment
+    host = os.getenv("FLASK_HOST", "0.0.0.0")  # Default to "0.0.0.0" for global and 127.0.0.1 for local
+    port = int(os.getenv("PORT", 8000))        # Default to port 8000 for deployment
+    app.run(host=host, port=port, debug=False) # Disable debug mode for production
