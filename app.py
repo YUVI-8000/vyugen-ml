@@ -110,6 +110,6 @@ def search():
     return jsonify({'query': topic, 'results': unique_results, 'total_results': total_results})
 
 if __name__ == '__main__':
-    host = os.getenv("FLASK_HOST", "127.0.0.1")
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 8000))
     app.run(host=host, port=port, debug=False)
