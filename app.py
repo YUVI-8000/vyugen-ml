@@ -32,6 +32,9 @@ if response.status_code == 200:
 else:
     raise Exception(f"Failed to fetch dataset, HTTP status code {response.status_code}")
 
+# Normalize column names
+data.columns = data.columns.str.strip().str.lower()
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing for integration
@@ -41,6 +44,9 @@ def add_repetition_count(data, column_name="text"):
     """
     Add a column to show how many times each question is repeated.
     """
+    if column_name not in data.columns:
+        raise KeyError(f"Column '{column_name}' not found in the dataset")
+    data[column_name] = data[column_name].fillna("").str.strip()
     data["Repetitions"] = data.groupby(column_name)[column_name].transform("count")
     return data
 
@@ -59,47 +65,36 @@ question_vectors = vectorizer.fit_transform(questions)
 def search():
     """
     Search endpoint to retrieve questions based on a topic query.
-    This function handles the search logic using both BM25 and TF-IDF Cosine Similarity.
     """
-    # Retrieve the query from request parameters
     topic = request.args.get('query', '').strip().lower()
-
-    # Return an error if no query is provided
     if not topic:
         return jsonify({'error': 'No topic query provided'}), 400
 
-    # Pre-filter questions based on topic
     filtered_questions = [
         (i, q) for i, q in enumerate(questions) if re.search(rf"\b{re.escape(topic)}\b", q, re.IGNORECASE)
     ]
 
-    # If no questions match the topic, return empty results
     if not filtered_questions:
         return jsonify({'query': topic, 'results': [], 'total_results': 0})
 
-    # Extract indices of the filtered questions
     filtered_indices = [i for i, _ in filtered_questions]
     filtered_question_texts = [q for _, q in filtered_questions]
 
-    # Rebuild TF-IDF vectors and BM25 model for the filtered questions only
     filtered_vectors = vectorizer.transform(filtered_question_texts)
     tokenized_questions = [re.findall(r'\b\w+\b', q.lower()) for q in filtered_question_texts]
     bm25 = BM25Plus(tokenized_questions)
     tokenized_topic = re.findall(r'\b\w+\b', topic)
     bm25_scores = bm25.get_scores(tokenized_topic)
 
-    # Compute TF-IDF Cosine Similarity for the filtered questions
     topic_vector = vectorizer.transform([topic])
     similarities = cosine_similarity(topic_vector, filtered_vectors).flatten()
 
-    # Combine BM25 and TF-IDF similarities and rank the results
     combined_results = [
-        (filtered_indices[i], max(similarities[i], bm25_scores[i]))  # Take the max score from both methods
+        (filtered_indices[i], max(similarities[i], bm25_scores[i]))
         for i in range(len(filtered_indices))
     ]
     sorted_results = sorted(combined_results, key=lambda x: x[1], reverse=True)
 
-    # Prepare the results list
     results = [
         {
             'question': questions[i],
@@ -109,21 +104,12 @@ def search():
         for i, score in sorted_results
     ]
 
-    # Remove duplicates based on 'question' field using OrderedDict
     unique_results = list(OrderedDict((result['question'], result) for result in results).values())
-
-    # Total unique results
     total_results = len(unique_results)
 
-    # Return the search results in JSON format
     return jsonify({'query': topic, 'results': unique_results, 'total_results': total_results})
 
-# if __name__ == '__main__':
-#     # Start the Flask server for API
-#     app.run(debug=True, host="127.0.0.1", port=8000)
-
 if __name__ == '__main__':
-    # Fetch host and port dynamically for deployment
-    host = os.getenv("FLASK_HOST", "0.0.0.0")  # Default to "0.0.0.0" for global and 127.0.0.1 for local
-    port = int(os.getenv("PORT", 8000))        # Default to port 8000 for deployment
-    app.run(host=host, port=port, debug=False) # Disable debug mode for production
+    host = os.getenv("FLASK_HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", 8000))
+    app.run(host=host, port=port, debug=False)
